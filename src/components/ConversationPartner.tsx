@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { conversationTurn, type ChatMessage } from '../lib/gemini'
-import { useVoice } from '../hooks/useVoice'
 import { useAppStore } from '../store/appStore'
 import { db } from '../lib/db'
-import { Button, Card, Badge, MicButton, LoadingSpinner } from './ui'
+import { Button, Card, Badge, AiThinking, HoldToSpeakButton } from './ui'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -30,25 +29,20 @@ export default function ConversationPartner() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  const { transcript, interimText, isListening, isSupported, startListening, stopListening, clearTranscript, speakText } = useVoice()
+  const speakText = (text: string) => {
+    const utt = new SpeechSynthesisUtterance(text)
+    speechSynthesis.speak(utt)
+  }
 
   // Auto-scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isLoading])
 
-  // When voice transcript is finalized, put it in input
-  useEffect(() => {
-    if (transcript && !isListening) {
-      setInputText(transcript)
-    }
-  }, [transcript, isListening])
-
   const handleSelectScenario = (scenarioId: string) => {
     setSelectedScenario(scenarioId)
     setMessages([])
     setHistory([])
-    clearTranscript()
     setInputText('')
 
     // Add welcome message
@@ -70,11 +64,9 @@ export default function ConversationPartner() {
     const userMsg: Message = { role: 'user', content: text.trim(), timestamp: new Date() }
     setMessages(prev => [...prev, userMsg])
     setInputText('')
-    clearTranscript()
     setIsLoading(true)
     setError('')
 
-    // Build history for Gemini
     const newHistory: ChatMessage[] = [
       ...history,
       { role: 'user', text: text.trim() },
@@ -91,11 +83,15 @@ export default function ConversationPartner() {
         { role: 'model', text: reply },
       ])
 
-      // Auto-speak reply
-      await speakText(reply)
+      // Auto-speak reply (local speakText is synchronous, no await needed)
+      speakText(reply)
     } catch (e: any) {
       if (e.message === 'NO_API_KEY') {
         setError('Add your Gemini API key in Settings to use AI conversation.')
+      } else if (e.message === 'OFFLINE') {
+        setError("You're offline — connect to the internet to chat with AI.")
+      } else if (e.message === 'TIMEOUT') {
+        setError('Request timed out — check your connection and try again.')
       } else {
         setError('Connection error. Check your internet and try again.')
       }
@@ -218,18 +214,8 @@ export default function ConversationPartner() {
         ))}
 
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-slate-700/80 rounded-3xl rounded-tl-sm px-4 py-3">
-              <div className="flex gap-1.5">
-                {[0, 1, 2].map(i => (
-                  <div
-                    key={i}
-                    className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
-                    style={{ animationDelay: `${i * 0.15}s` }}
-                  />
-                ))}
-              </div>
-            </div>
+          <div className="flex justify-start px-2">
+            <AiThinking variant="wave" label="Coach is thinking..." />
           </div>
         )}
 
@@ -242,10 +228,6 @@ export default function ConversationPartner() {
 
       {/* Input Area */}
       <div className="px-4 py-3 border-t border-slate-700/50 space-y-2">
-        {interimText && isListening && (
-          <p className="text-slate-400 text-xs px-1">{interimText}...</p>
-        )}
-
         <div className="flex items-end gap-2">
           <textarea
             ref={inputRef}
@@ -263,17 +245,10 @@ export default function ConversationPartner() {
             style={{ minHeight: 48, maxHeight: 120 }}
           />
 
-          <MicButton
-            isListening={isListening}
-            isSupported={isSupported}
-            onStart={() => { clearTranscript(); startListening() }}
-            onStop={() => {
-              stopListening()
-              // Give a moment for final transcript then send
-              setTimeout(() => {
-                if (transcript) sendMessage(transcript)
-              }, 500)
-            }}
+          <HoldToSpeakButton
+            size="md"
+            onResult={(t) => setInputText(t)}
+            disabled={isLoading}
           />
 
           <button
