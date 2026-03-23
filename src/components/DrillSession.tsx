@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDrills } from '../hooks/useDrills'
-import { useVoice } from '../hooks/useVoice'
 import { evaluateDrill } from '../lib/gemini'
 import { getUnit } from '../data/curriculum'
-import { Button, Card, Badge, MicButton, ProgressBar, LoadingSpinner, EmptyState } from './ui'
+import { Button, Card, Badge, ProgressBar, LoadingSpinner, EmptyState, AiThinking, HoldToSpeakButton } from './ui'
 
 type DrillPhase = 'prompt' | 'recording' | 'reviewing' | 'feedback' | 'rating' | 'complete'
 
@@ -19,11 +18,12 @@ export default function DrillSession() {
     loadQueue, submitRating,
   } = useDrills()
 
-  const {
-    transcript, interimText, isListening, isSupported,
-    startListening, stopListening, clearTranscript, speakText,
-    error: voiceError,
-  } = useVoice()
+  const [transcript, setTranscript] = useState('')
+
+  const speakText = (text: string) => {
+    const utt = new SpeechSynthesisUtterance(text)
+    speechSynthesis.speak(utt)
+  }
 
   const [phase, setPhase] = useState<DrillPhase>('prompt')
   const [aiFeedback, setAiFeedback] = useState('')
@@ -35,14 +35,6 @@ export default function DrillSession() {
     const unitId = unitParam ? parseInt(unitParam) : undefined
     loadQueue(unitId)
   }, [])
-
-  // Auto-progress when recording stops with transcript
-  const handleStopRecording = useCallback(() => {
-    stopListening()
-    if (transcript) {
-      setPhase('reviewing')
-    }
-  }, [stopListening, transcript])
 
   const handleGetFeedback = async () => {
     if (!currentDrill || !currentCard || !transcript) return
@@ -62,6 +54,10 @@ export default function DrillSession() {
     } catch (e: any) {
       if (e.message === 'NO_API_KEY') {
         setFeedbackError('Please add your Gemini API key in Settings to get AI feedback.')
+      } else if (e.message === 'OFFLINE') {
+        setFeedbackError('You\'re offline — connect to the internet to get AI feedback.')
+      } else if (e.message === 'TIMEOUT') {
+        setFeedbackError('Request timed out — check your connection and try again.')
       } else {
         setFeedbackError('Could not get AI feedback. Check your connection and try again.')
       }
@@ -77,7 +73,7 @@ export default function DrillSession() {
     setPhase('prompt')
     setAiFeedback('')
     setShowAnswer(false)
-    clearTranscript()
+    setTranscript('')
   }
 
   const handleSpeakAnswer = () => {
@@ -145,19 +141,11 @@ export default function DrillSession() {
           </p>
         </div>
 
-        {/* Voice Error */}
-        {voiceError && (
-          <p className="text-red-400 text-sm">{voiceError}</p>
-        )}
-
         {/* Transcript Display */}
-        {(transcript || interimText) && (
+        {transcript && (
           <div className="w-full bg-slate-900/60 rounded-2xl p-3 text-left">
             <p className="text-xs text-slate-400 mb-1">You said:</p>
-            <p className="text-white">
-              {transcript}
-              {interimText && <span className="text-slate-400"> {interimText}</span>}
-            </p>
+            <p className="text-white">{transcript}</p>
           </div>
         )}
 
@@ -187,7 +175,7 @@ export default function DrillSession() {
           <p className="text-amber-400 text-sm text-center">{feedbackError}</p>
         )}
 
-        {isLoadingFeedback && <LoadingSpinner text="Getting AI feedback..." />}
+        {isLoadingFeedback && <AiThinking variant="dots" label="Evaluating your answer..." />}
       </Card>
 
       {/* Controls */}
@@ -197,12 +185,13 @@ export default function DrillSession() {
           <div className="flex flex-col items-center gap-3">
             <p className="text-slate-400 text-sm">Hold mic to speak your answer</p>
             <div className="flex items-center gap-6">
-              <MicButton
-                isListening={isListening}
-                isSupported={isSupported}
-                onStart={() => { clearTranscript(); startListening() }}
-                onStop={handleStopRecording}
+              <HoldToSpeakButton
                 size="lg"
+                onStart={() => setTranscript('')}
+                onResult={(t) => {
+                  setTranscript(t)
+                  setPhase('reviewing')
+                }}
               />
               <button
                 onClick={() => { setShowAnswer(true) }}
@@ -216,7 +205,7 @@ export default function DrillSession() {
 
         {phase === 'reviewing' && transcript && (
           <div className="flex gap-3">
-            <Button variant="secondary" className="flex-1" onClick={() => { clearTranscript(); setPhase('prompt') }}>
+            <Button variant="secondary" className="flex-1" onClick={() => { setTranscript(''); setPhase('prompt') }}>
               Retry
             </Button>
             <Button className="flex-1" onClick={handleGetFeedback}>
