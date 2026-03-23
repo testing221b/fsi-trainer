@@ -75,6 +75,7 @@ export default function App() {
 
       {/* Bottom navigation */}
       <nav
+        aria-label="Main navigation"
         className="shrink-0 border-t border-slate-700/60 bg-slate-900/95 backdrop-blur-md"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
@@ -90,7 +91,7 @@ export default function App() {
                 }`
               }
             >
-              <span className="text-xl leading-none">{item.icon}</span>
+              <span className="text-xl leading-none" aria-hidden="true">{item.icon}</span>
               <span className="text-[10px] font-medium">{item.label}</span>
             </NavLink>
           ))}
