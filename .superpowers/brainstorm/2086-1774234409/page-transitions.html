@@ -1,0 +1,99 @@
+<h2>頁面切換動畫風格</h2>
+<p class="subtitle">從 Home 切到 Drills 時，畫面怎麼轉場？選一個最符合「原生 App 質感」的風格。</p>
+
+<style>
+.preview-wrap { display:flex; gap:12px; justify-content:center; align-items:center; padding:24px 16px 16px; background:#0f172a; border-radius:16px; overflow:hidden; }
+.phone { width:90px; height:160px; border-radius:14px; border:2px solid #334155; background:#1e293b; overflow:hidden; position:relative; display:flex; flex-direction:column; }
+.phone-bar { height:24px; background:#0f172a; display:flex; align-items:center; justify-content:center; font-size:9px; color:#475569; letter-spacing:.5px; flex-shrink:0; }
+.phone-body { flex:1; display:flex; align-items:center; justify-content:center; font-size:22px; }
+.arrow { font-size:20px; color:#334155; }
+
+/* A — Fade */
+.fade-from { animation: fadeOut 1.8s infinite; }
+.fade-to   { animation: fadeIn  1.8s infinite; }
+@keyframes fadeOut { 0%,30%{opacity:1} 60%,100%{opacity:0.15} }
+@keyframes fadeIn  { 0%,30%{opacity:0.15} 60%,100%{opacity:1} }
+
+/* B — Slide Left (iOS standard) */
+.slide-from { animation: slideOut 2s infinite ease-in-out; }
+.slide-to   { animation: slideIn  2s infinite ease-in-out; }
+@keyframes slideOut { 0%,20%{transform:translateX(0)} 70%,100%{transform:translateX(-60px);opacity:0.3} }
+@keyframes slideIn  { 0%,20%{transform:translateX(60px);opacity:0.3} 70%,100%{transform:translateX(0);opacity:1} }
+
+/* C — Scale Up (modal feel) */
+.scale-from { animation: scaleDown 2s infinite ease-in-out; }
+.scale-to   { animation: scaleUp   2s infinite ease-in-out; }
+@keyframes scaleDown { 0%,20%{transform:scale(1);opacity:1} 70%,100%{transform:scale(0.88);opacity:0.3} }
+@keyframes scaleUp   { 0%,20%{transform:scale(0.88);opacity:0.3} 70%,100%{transform:scale(1);opacity:1} }
+
+.note { font-size:11px; color:#64748b; text-align:center; margin-top:8px; }
+</style>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f172a; padding:20px 12px 12px;">
+      <div class="preview-wrap" style="padding:16px 10px 10px;">
+        <div class="phone fade-from">
+          <div class="phone-bar">HOME</div>
+          <div class="phone-body">🏠</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="phone fade-to">
+          <div class="phone-bar">DRILLS</div>
+          <div class="phone-body">📚</div>
+        </div>
+      </div>
+      <div class="note">淡入淡出，循環播放中</div>
+    </div>
+    <div class="card-body">
+      <h3>A · 淡入淡出 (Fade)</h3>
+      <p>最輕量。畫面直接溶入下一頁，0 方向感干擾。實作只需 CSS opacity transition，不用 framer-motion。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f172a; padding:20px 12px 12px;">
+      <div class="preview-wrap" style="padding:16px 10px 10px;">
+        <div class="phone slide-from">
+          <div class="phone-bar">HOME</div>
+          <div class="phone-body">🏠</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="phone slide-to">
+          <div class="phone-bar">DRILLS</div>
+          <div class="phone-body">📚</div>
+        </div>
+      </div>
+      <div class="note">左右滑動，iOS 標準切換</div>
+    </div>
+    <div class="card-body">
+      <h3>B · 水平滑動 (Slide)</h3>
+      <p>iOS 原生感最強。頁面從右側滑入，舊頁往左退出。需加 framer-motion (~50KB) 或純 CSS keyframe。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f172a; padding:20px 12px 12px;">
+      <div class="preview-wrap" style="padding:16px 10px 10px;">
+        <div class="phone scale-from">
+          <div class="phone-bar">HOME</div>
+          <div class="phone-body">🏠</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="phone scale-to">
+          <div class="phone-bar">DRILLS</div>
+          <div class="phone-body">📚</div>
+        </div>
+      </div>
+      <div class="note">縮放感，Android Material 風格</div>
+    </div>
+    <div class="card-body">
+      <h3>C · 縮放淡入 (Scale)</h3>
+      <p>舊頁縮小消失，新頁放大出現。有「深度感」，像打開一個新層級。Android Material Design 3 風格。</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">💡 推薦：<strong>B (水平滑動)</strong> — 最接近 iOS 原生 App 的感受，且不需要 framer-motion，用純 CSS + React key transition 即可實現，零額外依賴。</p>

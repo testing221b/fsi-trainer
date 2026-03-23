@@ -1,0 +1,107 @@
+<h2>AI Thinking Animation Style</h2>
+<p class="subtitle">When Gemini is generating a response, what should the user see? Pick the style that feels most like a premium language coach.</p>
+
+<style>
+/* Option A — Breathing Dots (ChatGPT / iMessage style) */
+.demo-a {
+  display: flex; align-items: center; gap: 6px; padding: 14px 18px;
+  background: #1e293b; border-radius: 18px; width: fit-content;
+}
+.dot { width: 9px; height: 9px; border-radius: 50%; background: #60a5fa; animation: bounce 1.2s infinite ease-in-out; }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+
+/* Option B — Gradient Wave (Siri / Claude style) */
+.demo-b {
+  width: 160px; height: 36px; border-radius: 18px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4, #3b82f6);
+  background-size: 300% 100%;
+  animation: wave 2s linear infinite;
+}
+@keyframes wave { 0%{background-position:100% 0} 100%{background-position:-100% 0} }
+
+/* Option C — Pulse Ring (Radial pulse) */
+.demo-c {
+  position: relative; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+}
+.pulse-core { width: 24px; height: 24px; border-radius: 50%; background: #3b82f6; }
+.pulse-ring {
+  position: absolute; width: 48px; height: 48px; border-radius: 50%;
+  border: 2px solid #3b82f6; animation: pulse-out 1.5s infinite ease-out; opacity: 0;
+}
+.pulse-ring:nth-child(2) { animation-delay: 0.5s; }
+@keyframes pulse-out { 0%{transform:scale(0.5);opacity:0.8} 100%{transform:scale(1.4);opacity:0} }
+
+/* Option D — Typewriter cursor blink */
+.demo-d {
+  font-size: 15px; color: #94a3b8; font-family: monospace; padding: 14px 18px;
+  background: #1e293b; border-radius: 12px;
+}
+.cursor { display: inline-block; width: 2px; height: 16px; background: #60a5fa; animation: blink 0.8s step-end infinite; vertical-align: text-bottom; margin-left: 2px; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.demo-box {
+  background: #0f172a; border-radius: 16px; padding: 24px 28px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: 12px;
+}
+.demo-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 4px; }
+.demo-context { font-size: 12px; color: #475569; margin-top: 8px; }
+</style>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f172a;padding:28px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;">
+      <div class="demo-label">Coaching in progress...</div>
+      <div class="demo-a"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="demo-context">Feels like texting / iMessage</div>
+    </div>
+    <div class="card-body">
+      <h3>A · Breathing Dots</h3>
+      <p>3 bouncing dots, familiar chat pattern. Simple, unobtrusive. Users instantly know AI is thinking.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f172a;padding:28px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;">
+      <div class="demo-label">Analyzing your speech...</div>
+      <div class="demo-b"></div>
+      <div class="demo-context">Feels like Siri / Claude.ai</div>
+    </div>
+    <div class="card-body">
+      <h3>B · Gradient Wave</h3>
+      <p>Flowing colour bar that shifts from blue → purple → cyan. Premium, ambient feel. Suggests deep AI processing.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f172a;padding:28px;display:flex;flex-direction:column;align-items:center;gap:8px;">
+      <div class="demo-label">FSI Coach thinking...</div>
+      <div class="demo-c">
+        <div class="pulse-ring"></div><div class="pulse-ring"></div>
+        <div class="pulse-core"></div>
+      </div>
+      <div class="demo-context">Feels like radar / sonar</div>
+    </div>
+    <div class="card-body">
+      <h3>C · Pulse Ring</h3>
+      <p>Expanding rings from a central dot — like a radar or heartbeat. Dramatic attention signal. Best for voice feedback screen.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="d" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f172a;padding:28px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;">
+      <div class="demo-label">Feedback generating</div>
+      <div class="demo-d">Evaluating response<span class="cursor"></span></div>
+      <div class="demo-context">Feels like a terminal / IDE</div>
+    </div>
+    <div class="card-body">
+      <h3>D · Typewriter Cursor</h3>
+      <p>Text label + blinking cursor. Minimal, focus on content. Suits the "coach giving precise feedback" metaphor.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">💡 My recommendation: <strong>B (Gradient Wave)</strong> for Conversation & Voice screens — matches the premium C2 coaching feel. <strong>A (Dots)</strong> for Drill quick feedback — faster, less distracting.</p>

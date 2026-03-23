@@ -1,0 +1,160 @@
+<h2>Hold-to-Speak 麥克風按鈕設計</h2>
+<p class="subtitle">iOS 要求使用者主動點擊才能啟動麥克風。這個按鈕是語音練習的核心互動，需要又大、又清楚、按下去有反饋。選一個你最喜歡的風格。</p>
+
+<style>
+/* ── shared reset ── */
+.btn-demo { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:28px 0 20px; background:#0f172a; border-radius:16px; }
+.btn-label { font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#475569; }
+.state-row { display:flex; gap:32px; align-items:flex-end; justify-content:center; }
+.state-tag { font-size:10px; color:#64748b; text-align:center; margin-top:6px; }
+
+/* ── Option A: Big Pill (Line-style) ── */
+.btn-a-idle {
+  width:180px; height:56px; border-radius:28px;
+  background:#1e3a5f; border:2px solid #3b82f6;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  color:#93c5fd; font-size:14px; font-weight:600; letter-spacing:.5px; cursor:pointer;
+  box-shadow:0 0 0 0 #3b82f640;
+}
+.btn-a-press {
+  width:180px; height:56px; border-radius:28px;
+  background:#1d4ed8; border:2px solid #60a5fa;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  color:#fff; font-size:14px; font-weight:600; cursor:pointer;
+  box-shadow:0 0 0 12px #3b82f620, 0 0 0 24px #3b82f610;
+  animation:pill-pulse 1.5s infinite;
+}
+@keyframes pill-pulse { 0%,100%{box-shadow:0 0 0 8px #3b82f625,0 0 0 20px #3b82f610} 50%{box-shadow:0 0 0 14px #3b82f615,0 0 0 28px #3b82f608} }
+
+/* ── Option B: Circle with glow (Telegram Voice) ── */
+.btn-b-idle {
+  width:72px; height:72px; border-radius:50%;
+  background:#1e293b; border:2px solid #334155;
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; cursor:pointer; color:#64748b;
+}
+.btn-b-press {
+  width:72px; height:72px; border-radius:50%;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; cursor:pointer; color:#fff;
+  box-shadow:0 0 0 8px #3b82f630, 0 0 24px #7c3aed60;
+  animation:circle-glow 1.2s infinite alternate;
+}
+@keyframes circle-glow { from{box-shadow:0 0 0 6px #3b82f628,0 0 20px #7c3aed50} to{box-shadow:0 0 0 14px #3b82f618,0 0 36px #7c3aed70} }
+
+/* ── Option C: Square with waveform bars ── */
+.btn-c-idle {
+  width:80px; height:80px; border-radius:20px;
+  background:#1e293b; border:2px solid #334155;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  cursor:pointer; color:#64748b; font-size:10px;
+}
+.waveform { display:flex; gap:3px; align-items:center; height:24px; }
+.bar { width:4px; border-radius:2px; background:#475569; }
+.btn-c-press {
+  width:80px; height:80px; border-radius:20px;
+  background:#0f3460; border:2px solid #3b82f6;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  cursor:pointer; color:#93c5fd; font-size:10px;
+}
+.bar-live { width:4px; border-radius:2px; background:#60a5fa; }
+.bar-live:nth-child(1){animation:wave1 0.6s infinite alternate}
+.bar-live:nth-child(2){animation:wave2 0.5s infinite alternate}
+.bar-live:nth-child(3){animation:wave3 0.7s infinite alternate}
+.bar-live:nth-child(4){animation:wave1 0.45s infinite alternate}
+.bar-live:nth-child(5){animation:wave2 0.65s infinite alternate}
+@keyframes wave1{from{height:4px}to{height:20px}}
+@keyframes wave2{from{height:8px}to{height:16px}}
+@keyframes wave3{from{height:12px}to{height:24px}}
+</style>
+
+<div class="cards">
+
+  <!-- Option A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="btn-demo">
+        <div class="state-row">
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <div class="btn-a-idle">🎙️ 按住說話</div>
+            <div class="state-tag">放開狀態</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <div class="btn-a-press">🔴 錄音中...</div>
+            <div class="state-tag">按住狀態（脈衝光環）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A · 大型膠囊按鈕</h3>
+      <p>全寬橫條設計，文字清楚說明「按住說話」。按下後變紅 + 脈衝光環。最容易被發現、最好按。</p>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="btn-demo">
+        <div class="state-row">
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <div class="btn-b-idle">🎙️</div>
+            <div class="state-tag">待機</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <div class="btn-b-press">🎙️</div>
+            <div class="state-tag">錄音中（漸層光暈）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B · 圓形浮動按鈕</h3>
+      <p>大圓形 + 按下時藍紫漸層光暈爆發。視覺戲劇感強，符合「說話就像啟動引擎」的感覺。類似 Telegram 語音。</p>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="btn-demo">
+        <div class="state-row">
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <div class="btn-c-idle">
+              <div class="waveform">
+                <div class="bar" style="height:6px"></div>
+                <div class="bar" style="height:12px"></div>
+                <div class="bar" style="height:18px"></div>
+                <div class="bar" style="height:10px"></div>
+                <div class="bar" style="height:6px"></div>
+              </div>
+              <span>按住錄音</span>
+            </div>
+            <div class="state-tag">待機（靜態波形）</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <div class="btn-c-press">
+              <div class="waveform">
+                <div class="bar-live"></div>
+                <div class="bar-live"></div>
+                <div class="bar-live"></div>
+                <div class="bar-live"></div>
+                <div class="bar-live"></div>
+              </div>
+              <span>說話中 🔵</span>
+            </div>
+            <div class="state-tag">錄音中（動態音波）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C · 方形 + 聲波視覺</h3>
+      <p>按下後顯示跳動音波條，視覺上直接反映「有聲音進來」。最有科技感、最像語音錄音工具。</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">💡 我的推薦：<strong>B (圓形浮動)</strong> 用在 Voice Practice 頁面大按鈕 ＋ <strong>A (膠囊)</strong> 用在 Drill/Chat 頁面底部輸入區。兩者都加觸覺回饋 (vibrate)。</p>
