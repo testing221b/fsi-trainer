@@ -1,3 +1,5 @@
+import React from 'react'
+
 // src/components/ui/AiThinking.tsx
 interface AiThinkingProps {
   variant: 'wave' | 'dots'
