@@ -18,7 +18,7 @@ export default function Settings() {
   const [keyError, setKeyError] = useState('')
   const [showKey, setShowKey] = useState(false)
   const [resetConfirm, setResetConfirm] = useState(false)
-  const [voices, setVoices] = useState(loadVoices)
+  const [voices] = useState(loadVoices)
   const [netStatus, setNetStatus] = useState<'idle' | 'checking' | 'ok' | 'fail'>('idle')
   const [availableModels, setAvailableModels] = useState<string[]>([])
 
@@ -38,7 +38,7 @@ export default function Settings() {
   const handleNetworkTest = async () => {
     setNetStatus('checking')
     try {
-      const res = await fetch(
+      await fetch(
         'https://generativelanguage.googleapis.com/v1beta/models?key=test',
         { method: 'GET' }
       )

@@ -1,6 +1,5 @@
 // src/components/ui/HoldToSpeakButton.tsx
-import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { AiThinking } from './AiThinking'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 export interface HoldToSpeakButtonProps {
   onResult: (transcript: string) => void

@@ -1,5 +1,5 @@
 // src/components/ui/PageTransition.tsx
-import React, { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 
 interface PageTransitionProps {

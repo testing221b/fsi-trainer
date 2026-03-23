@@ -6,7 +6,6 @@ import {
 import { useProgress } from '../hooks/useProgress'
 import { useDrills } from '../hooks/useDrills'
 import { seedCardsIfNeeded } from '../lib/db'
-import { TOTAL_DRILLS } from '../data/curriculum'
 import { Card, Badge, ProgressBar, LoadingSpinner } from './ui'
 
 const CEFR_COLORS: Record<string, string> = {
@@ -120,8 +119,8 @@ export default function Dashboard() {
               <YAxis hide />
               <Tooltip
                 contentStyle={{ background: '#1e293b', border: 'none', borderRadius: 12, color: '#f1f5f9' }}
-                formatter={(v: number) => [`${v} XP`, 'XP Earned']}
-                labelFormatter={formatDate}
+                formatter={(v) => [`${v} XP`, 'XP Earned']}
+                labelFormatter={(label) => formatDate(String(label))}
               />
               <Bar dataKey="xp" radius={[6, 6, 0, 0]}>
                 {weeklyXP.map((entry, i) => (

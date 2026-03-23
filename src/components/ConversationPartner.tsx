@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { conversationTurn, type ChatMessage } from '../lib/gemini'
 import { useAppStore } from '../store/appStore'
 import { db } from '../lib/db'
-import { Button, Card, Badge, AiThinking, HoldToSpeakButton } from './ui'
+import { Card, Badge, AiThinking, HoldToSpeakButton } from './ui'
 
 interface Message {
   role: 'user' | 'assistant'
