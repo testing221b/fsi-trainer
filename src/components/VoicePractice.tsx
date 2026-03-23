@@ -212,7 +212,7 @@ export default function VoicePractice() {
 
         <HoldToSpeakButton
           size="lg"
-          onStart={() => { setTranscript(''); setIsRecording(true) }}
+          onStart={() => setIsRecording(true)}
           onResult={(t) => setTranscript(prev => prev ? prev + ' ' + t : t)}
           onStop={() => setIsRecording(false)}
         />
