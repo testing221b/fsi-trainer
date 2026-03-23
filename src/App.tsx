@@ -1,11 +1,18 @@
-import { Component, type ReactNode } from 'react'
-import { Routes, Route, NavLink, useLocation } from 'react-router-dom'
-import Dashboard from './components/Dashboard'
-import DrillSession from './components/DrillSession'
-import ConversationPartner from './components/ConversationPartner'
-import VoicePractice from './components/VoicePractice'
-import UnitMap from './components/UnitMap'
-import Settings from './components/Settings'
+// src/App.tsx
+import { Component, lazy, Suspense, type ReactNode } from 'react'
+import { Routes, Route, NavLink } from 'react-router-dom'
+import { LoadingSpinner } from './components/ui'
+import { NetworkBanner } from './components/ui/NetworkBanner'
+import { PageTransition } from './components/ui/PageTransition'
+
+// Lazy-loaded route components — Vite splits each into a separate JS chunk.
+// Users only download the code for pages they actually visit.
+const Dashboard           = lazy(() => import('./components/Dashboard'))
+const DrillSession        = lazy(() => import('./components/DrillSession'))
+const ConversationPartner = lazy(() => import('./components/ConversationPartner'))
+const VoicePractice       = lazy(() => import('./components/VoicePractice'))
+const UnitMap             = lazy(() => import('./components/UnitMap'))
+const Settings            = lazy(() => import('./components/Settings'))
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false }
@@ -29,34 +36,44 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
 }
 
 const NAV_ITEMS = [
-  { path: '/', label: 'Home', icon: '🏠' },
-  { path: '/drills', label: 'Drills', icon: '📚' },
-  { path: '/chat', label: 'Chat', icon: '💬' },
-  { path: '/voice', label: 'Voice', icon: '🎙️' },
-  { path: '/map', label: 'Units', icon: '🗺️' },
+  { path: '/',         label: 'Home',     icon: '🏠' },
+  { path: '/drills',   label: 'Drills',   icon: '📚' },
+  { path: '/chat',     label: 'Chat',     icon: '💬' },
+  { path: '/voice',    label: 'Voice',    icon: '🎙️' },
+  { path: '/map',      label: 'Units',    icon: '🗺️' },
   { path: '/settings', label: 'Settings', icon: '⚙️' },
 ]
 
 export default function App() {
-  const location = useLocation()
-
   return (
     <div className="h-full flex flex-col bg-slate-900">
-      {/* Main content area */}
+      {/* Fixed offline/online status banner — sits above everything */}
+      <NetworkBanner />
+
+      {/* Nesting order is intentional:
+          Suspense  → catches lazy-load chunk failures (must be outermost)
+          ErrorBoundary → catches runtime component errors
+          Routes + Wrap → PageTransition wraps each route element individually */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/drills" element={<DrillSession />} />
-            <Route path="/chat" element={<ConversationPartner />} />
-            <Route path="/voice" element={<VoicePractice />} />
-            <Route path="/map" element={<UnitMap />} />
-            <Route path="/settings" element={<Settings />} />
-          </Routes>
-        </ErrorBoundary>
+        <Suspense fallback={
+          <div className="flex-1 flex items-center justify-center">
+            <LoadingSpinner text="Loading..." />
+          </div>
+        }>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/"         element={<Wrap><Dashboard /></Wrap>} />
+              <Route path="/drills"   element={<Wrap><DrillSession /></Wrap>} />
+              <Route path="/chat"     element={<Wrap><ConversationPartner /></Wrap>} />
+              <Route path="/voice"    element={<Wrap><VoicePractice /></Wrap>} />
+              <Route path="/map"      element={<Wrap><UnitMap /></Wrap>} />
+              <Route path="/settings" element={<Wrap><Settings /></Wrap>} />
+            </Routes>
+          </ErrorBoundary>
+        </Suspense>
       </main>
 
-      {/* Bottom navigation bar — iOS style */}
+      {/* Bottom navigation */}
       <nav
         className="shrink-0 border-t border-slate-700/60 bg-slate-900/95 backdrop-blur-md"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -81,4 +98,13 @@ export default function App() {
       </nav>
     </div>
   )
+}
+
+/**
+ * Wraps each route's element with PageTransition.
+ * PageTransition calls useLocation() internally — mounting it inside <Routes>
+ * ensures it receives the correct router context.
+ */
+function Wrap({ children }: { children: ReactNode }) {
+  return <PageTransition>{children}</PageTransition>
 }
