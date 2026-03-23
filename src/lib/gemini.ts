@@ -84,11 +84,29 @@ async function generate(
     body.systemInstruction = { parts: [{ text: systemInstruction }] }
   }
 
-  const res = await fetch(`${endpoint}?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
+  // Pre-flight offline check — fail fast without wasting a network attempt
+  if (!navigator.onLine) {
+    throw new Error('OFFLINE')
+  }
+
+  // 10-second timeout — prevents UI from hanging on slow/dead connections
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 10_000)
+
+  let res: Response
+  try {
+    res = await fetch(`${endpoint}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    })
+  } catch (e: any) {
+    if (e.name === 'AbortError') throw new Error('TIMEOUT')
+    throw e
+  } finally {
+    clearTimeout(timeoutId)
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: { message: res.statusText } }))

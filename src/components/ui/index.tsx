@@ -194,3 +194,4 @@ export function EmptyState({ icon, title, subtitle }: { icon: string; title: str
 }
 
 export { AiThinking } from './AiThinking'
+export { NetworkBanner } from './NetworkBanner'
