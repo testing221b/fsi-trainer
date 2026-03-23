@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { giveSpeakingFeedback, type SpeakingFeedback } from '../lib/gemini'
-import { useVoice } from '../hooks/useVoice'
 import { useAppStore } from '../store/appStore'
 import { CURRICULUM } from '../data/curriculum'
-import { Button, Card, Badge, MicButton, ProgressBar, LoadingSpinner, ScoreGauge } from './ui'
+import { Button, Card, Badge, ProgressBar, ScoreGauge, AiThinking, HoldToSpeakButton } from './ui'
 
 type PracticePhase = 'select' | 'record' | 'feedback'
 
@@ -15,10 +14,13 @@ export default function VoicePractice() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const {
-    transcript, interimText, isListening, isSupported,
-    startListening, stopListening, clearTranscript, speakText,
-  } = useVoice()
+  const [transcript, setTranscript] = useState('')
+  const [isRecording, setIsRecording] = useState(false)
+
+  const speakText = (text: string) => {
+    const utt = new SpeechSynthesisUtterance(text)
+    speechSynthesis.speak(utt)
+  }
 
   const selectedUnit = CURRICULUM.find(u => u.id === selectedUnitId)
 
@@ -34,6 +36,10 @@ export default function VoicePractice() {
     } catch (e: any) {
       if (e.message === 'NO_API_KEY') {
         setError('Add your Gemini API key in Settings to get AI feedback.')
+      } else if (e.message === 'OFFLINE') {
+        setError("You're offline — connect to the internet to get AI feedback.")
+      } else if (e.message === 'TIMEOUT') {
+        setError('Request timed out — check your connection and try again.')
       } else {
         setError('Could not get feedback. Check your internet connection.')
       }
@@ -46,7 +52,7 @@ export default function VoicePractice() {
     setPhase('select')
     setFeedback(null)
     setError('')
-    clearTranscript()
+    setTranscript('')
   }
 
   const ScoreRow = ({ label, score, comment }: { label: string; score: number; comment: string }) => {
@@ -118,7 +124,7 @@ export default function VoicePractice() {
           <Button variant="secondary" className="flex-1" onClick={handleReset}>
             New Practice
           </Button>
-          <Button className="flex-1" onClick={() => { clearTranscript(); setPhase('record') }}>
+          <Button className="flex-1" onClick={() => { setTranscript(''); setPhase('record') }}>
             Try Again
           </Button>
         </div>
@@ -149,7 +155,7 @@ export default function VoicePractice() {
               onClick={() => {
                 setSelectedUnitId(unit.id)
                 setPhase('record')
-                clearTranscript()
+                setTranscript('')
               }}
               className={`w-full text-left p-3 rounded-2xl border transition-all ${
                 selectedUnitId === unit.id
@@ -197,36 +203,32 @@ export default function VoicePractice() {
         </div>
 
         {/* Transcript live display */}
-        {(transcript || interimText) && (
+        {transcript && (
           <div className="w-full bg-slate-900/60 rounded-2xl p-3">
             <p className="text-xs text-slate-400 mb-1">Your speech:</p>
-            <p className="text-white text-sm leading-relaxed">
-              {transcript}
-              {interimText && <span className="text-slate-400"> {interimText}</span>}
-            </p>
+            <p className="text-white text-sm leading-relaxed">{transcript}</p>
           </div>
         )}
 
-        <MicButton
-          isListening={isListening}
-          isSupported={isSupported}
-          onStart={() => { clearTranscript(); startListening() }}
-          onStop={stopListening}
+        <HoldToSpeakButton
           size="lg"
+          onStart={() => { setTranscript(''); setIsRecording(true) }}
+          onResult={(t) => setTranscript(prev => prev ? prev + ' ' + t : t)}
+          onStop={() => setIsRecording(false)}
         />
 
         <p className="text-slate-500 text-sm">
-          {isListening ? '🔴 Recording... release to stop' : 'Hold to record your speech'}
+          {isRecording ? '🔴 Recording... release to stop' : 'Hold to record your speech'}
         </p>
       </Card>
 
       {error && <p className="text-amber-400 text-sm text-center">{error}</p>}
 
-      {isLoading && <LoadingSpinner text="Analyzing your speech..." />}
+      {isLoading && <AiThinking variant="wave" label="Analyzing your speech..." />}
 
       {transcript && !isLoading && (
         <div className="flex gap-3">
-          <Button variant="secondary" className="flex-1" onClick={clearTranscript}>Clear</Button>
+          <Button variant="secondary" className="flex-1" onClick={() => setTranscript('')}>Clear</Button>
           <Button className="flex-1" onClick={handleGetFeedback}>Get Feedback</Button>
         </div>
       )}
